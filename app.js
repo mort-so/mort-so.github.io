@@ -5,6 +5,7 @@ let timer;
 let currentStation = 0;
 let score = 0;
 let finished = false;
+let userAnswers = {};
 
 const savedTime = localStorage.getItem("remainingTime");
 if (savedTime !== null) {
@@ -34,6 +35,7 @@ function loadStation() {
 function submitAnswer() {
   let user = document.getElementById("answer").value.toLowerCase().trim();
   let correct = stations[currentStation].answer;
+  userAnswers[currentStation] = user;
 
   if (user === correct) score++;
 
@@ -66,16 +68,30 @@ function startTimer() {
 }
 
 
-function finishTest() {
+async function finishTest() {
   if (finished) return;
   finished = true;
-
   clearInterval(timer);
 
-  document.getElementById("app").innerHTML =
-    `<h2>Finished!</h2>
-     <p>Score: ${score}/${stations.length}</p>
-     <p>OOB Time: ${oobTime} seconds</p>`;
+  const payload = {
+    answers: userAnswers,
+    oob: oobTime,
+    duration: 300 - remainingTime,
+    userAgent: navigator.userAgent
+  };
+
+  const res = await fetch("PASTE_YOUR_WEB_APP_URL_HERE", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+
+  const result = await res.json();
+
+  document.getElementById("app").innerHTML = `
+    <h2>Finished!</h2>
+    <p>Score: ${result.score}</p>
+    <p>OOB Time: ${oobTime}s</p>
+  `;
 }
 
 
