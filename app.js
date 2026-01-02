@@ -7,6 +7,9 @@ let currentStation = 0;
 let score = 0;
 let finished = false;
 let userAnswers = {};
+const savedOOB = localStorage.getItem("oobTime");
+if (savedOOB !== null) oobTime = parseInt(savedOOB);
+
 
 const savedTime = localStorage.getItem("remainingTime");
 if (savedTime !== null) {
@@ -33,7 +36,7 @@ function loadStation() {
     `Station ${currentStation + 1}: ` + stations[currentStation].question;
 }
 
-function submitAnswer() {
+async function submitAnswer() {
   let user = document.getElementById("answer").value.toLowerCase().trim();
   let correct = stations[currentStation].answer;
   userAnswers[currentStation] = user;
@@ -41,20 +44,20 @@ function submitAnswer() {
   if (user === correct) score++;
 
   document.getElementById("answer").value = "";
-
   currentStation++;
 
   if (currentStation < stations.length) {
     loadStation();
   } else {
-    finishTest();
+    await finishTest();   // ← important
   }
 }
+
 
 function startTimer() {
   let lastTick = Date.now();
 
-  timer = setInterval(() => {
+ timer = setInterval(async () => {
     let now = Date.now();
     let delta = Math.floor((now - lastTick) / 1000);
     lastTick = now;
@@ -64,8 +67,8 @@ function startTimer() {
 
     updateTimerDisplay();
 
-    if (remainingTime <= 0) finishTest();
-  }, 1000);
+  if (remainingTime <= 0) await finishTest();
+}, 1000);
 }
 
 
@@ -84,14 +87,19 @@ async function finishTest() {
 
   const res = await fetch("https://script.google.com/macros/s/AKfycbwwzJ97KbgXokqunT2Iu-4Dm9nPMV1SU09WKfrnJOx-9jYgoqTmjHlufwP4k-0iUbeR8w/exec", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
     body: JSON.stringify(payload)
   });  
 
-  const result = await res.json();
+  const text = await res.text();
+console.log("Server response:", text);
 
+let result;
+try {
+  result = JSON.parse(text);
+} catch {
+  alert("Server error. See console.");
+  return;
+}
   document.getElementById("app").innerHTML = `
     <h2>Finished!</h2>
     <p>Score: ${result.score}</p>
@@ -123,6 +131,8 @@ document.addEventListener("visibilitychange", () => {
   } else if (lastHiddenTime !== null) {
     const away = Math.floor((Date.now() - lastHiddenTime) / 1000);
     oobTime += away;
+    localStorage.setItem("oobTime", oobTime);
     lastHiddenTime = null;
   }
 });
+
