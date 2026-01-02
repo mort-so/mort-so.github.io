@@ -37,10 +37,12 @@ function loadStation() {
 }
 
 async function submitAnswer() {
+  if (currentStation >= stations.length) return;
+
   let user = document.getElementById("answer").value.toLowerCase().trim();
   let correct = stations[currentStation].answer;
-  userAnswers[currentStation] = user;
 
+  userAnswers[currentStation] = user;
   if (user === correct) score++;
 
   document.getElementById("answer").value = "";
@@ -49,9 +51,10 @@ async function submitAnswer() {
   if (currentStation < stations.length) {
     loadStation();
   } else {
-    await finishTest();   // ← important
+    await finishTest();
   }
 }
+
 
 
 function startTimer() {
