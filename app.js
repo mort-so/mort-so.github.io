@@ -88,7 +88,7 @@ async function finishTest() {
     userAgent: navigator.userAgent
   };
 
-  const res = await fetch("https://script.google.com/macros/s/AKfycbwwzJ97KbgXokqunT2Iu-4Dm9nPMV1SU09WKfrnJOx-9jYgoqTmjHlufwP4k-0iUbeR8w/exec", {
+  const res = await fetch("https://script.google.com/macros/s/AKfycbwfATqky0PxwEiUgqZCazjQ96MUFZyFuu-dUDbY4zf-BNAz94RGz2vTSoCbzXU410UFXA/exec", {
     method: "POST",
     body: JSON.stringify(payload)
   });  
