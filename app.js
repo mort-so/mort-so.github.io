@@ -4,8 +4,16 @@ let answers = [];
 let correct = [];
 
 fetch(`${API}?action=getActiveTest`)
-  .then(r => r.json())
-  .then(meta => loadTest(meta.test));
+  .then(r => r.text())
+  .then(text => {
+    try {
+      const meta = JSON.parse(text);
+      loadTest(meta.test);
+    } catch(e) {
+      console.error("Invalid JSON:", text);
+    }
+  });
+
 
 function loadTest(name) {
   fetch(`${API}?action=getTestData&name=${name}`)
